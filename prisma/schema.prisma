@@ -15,21 +15,370 @@ datasource db {
 
 model User {
   id           String   @id @default(cuid())
-  user_name    String   @unique
+  userName     String   @unique @map("user_name")
   email        String   @unique
-  phone_number String   @unique
+  phoneNumber  String?  @map("phone_number")
   name         String?
   password     String
-  created_at   DateTime @default(now())
-  updated_at   DateTime @default(now())
-  role_id      String
-  role         Role     @relation(fields: [role_id], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+  roleId       String   @map("role_id")
+  role         Role     @relation(fields: [roleId], references: [id])
+  supervisorId Store[]  @relation("supervisor_id")
+  saleRepId    Store[]  @relation("sale_rep_id")
+  sipId        Store[]  @relation("sip_id")
+  auditorsId   Store[]  @relation("auditors_id")
+  osas         OSA[]
+  osas         OSA[]
+
+  @@map("users")
 }
 
 model Role {
-  id         String   @id @default(cuid())
-  name       String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-  User       User[]
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  User      User[]
+
+  @@map("role")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  ka        String
+  channel   String
+  code      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  stores    Store[]
+
+  @@map("customer")
+}
+
+model Store {
+  id           String      @id
+  name         String
+  essStoreCode String      @unique @map("ess_store_code")
+  typeCode     String      @map("type_code")
+  type         String
+  formatType   String      @map("format_type")
+  status       Boolean
+  frequency    Int
+  auditTime    Int         @map("audit_time")
+  region       String
+  province     String
+  district     String
+  ward         String
+  address      String
+  latitude     String
+  longitude    String
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @default(now()) @map("updated_at")
+  supervisorId String?     @map("supervisor_id")
+  supervisor   User?       @relation(name: "supervisor_id", fields: [supervisorId], references: [id])
+  saleRepId    String?     @map("sale_rep_id")
+  saleRep      User?       @relation(name: "sale_rep_id", fields: [saleRepId], references: [id])
+  sipId        String?     @map("sip_id")
+  sip          User?       @relation(name: "sip_id", fields: [sipId], references: [id])
+  auditorsId   String?     @map("auditors_id")
+  auditors     User?       @relation(name: "auditors_id", fields: [auditorsId], references: [id])
+  customerId   String      @map("customer_id")
+  customers    Customer    @relation(fields: [customerId], references: [id])
+  targetSOSs   TargetSOS[]
+  osas         OSA[]
+
+  @@map("store")
+}
+
+model Category {
+  id     String  @id
+  name   String
+  nameVN String? @map("name_vn")
+  code   String  @unique
+
+  status                  Boolean                 @default(true)
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @default(now()) @map("updated_at")
+  targetSOSs              TargetSOS[]
+  products                Product[]
+  subCategoryInCategories SubCategoryInCategory[]
+  sosrules                SOSRule[]
+
+  @@map("category")
+}
+
+model TargetSOS {
+  storeId    String   @map("store_id")
+  store      Store    @relation(fields: [storeId], references: [id])
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  target     Float
+
+  @@id([storeId, categoryId])
+  @@map("target_sos")
+}
+
+model SubCategory {
+  id                      String                  @id @default(cuid())
+  name                    String
+  nameVN                  String?                 @map("name_vn")
+  code                    String                  @unique
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @default(now()) @map("updated_at")
+  subCategoryInCategories SubCategoryInCategory[]
+  products                Product[]
+  sosrules                SOSRule[]
+
+  @@map("sub_category")
+}
+
+model SubCategoryInCategory {
+  categoryId    String      @map("category_id")
+  category      Category    @relation(fields: [categoryId], references: [id])
+  subCategoryId String      @map("sub_category_id")
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @default(now()) @map("updated_at")
+
+  @@id([categoryId, subCategoryId])
+  @@map("sub_category_in_category")
+}
+
+model Brand {
+  id        String    @id
+  name      String
+  code      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  products  Product[]
+  sosrules  SOSRule[]
+
+  @@map("brand")
+}
+
+model Product {
+  id             String  @id @default(cuid())
+  productCode    String  @unique @map("product_code")
+  oldProductCode String? @map("old_product_code")
+  name           String
+  nameVN         String? @map("name_vn")
+  packageSize    String? @map("package_size")
+  barcode        String? @map("barcode")
+  length         Int
+  unit           String?
+
+  status        Boolean      @default(true)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @default(now()) @map("updated_at")
+  brandId       String       @map("brand_id")
+  brand         Brand        @relation(fields: [brandId], references: [id])
+  categoryId    String?      @map("category_id")
+  category      Category?    @relation(fields: [categoryId], references: [id])
+  subCategoryId String?      @map("sub_category_id")
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  osas          OSA[]
+
+  @@map("product")
+}
+
+model SOSRule {
+  id            String      @id @default(cuid())
+  ruleBig       String?     @map("rule_big")
+  ruleSmall     String?     @map("rule_small")
+  note          String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @default(now()) @map("updated_at")
+  categoryId    String      @map("category_id")
+  category      Category    @relation(fields: [categoryId], references: [id])
+  subCategoryId String      @map("sub_category_id")
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
+  brandId       String      @map("brand_id")
+  brand         Brand       @relation(fields: [brandId], references: [id])
+
+  @@map("sos_rule")
+}
+
+model OOLRule {
+  id        String   @id @default(cuid())
+  offCode   String   @unique @map("off_code")
+  offName   String   @map("off_name")
+  offNameVN String   @map("off_name_vn")
+  ruleBig   Boolean  @map("rule_big")
+  ruleSmall Boolean  @map("rule_small")
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("ool_rule")
+}
+
+model OSA {
+  id        String @id @default(cuid())
+  monthYear Int    @map("month_year")
+
+  stock        Int
+  currentStock Int     @map("current_stock")
+  priceList    Boolean @map("price_list")
+  location     String
+
+  note               String?
+  comment            String
+  projectTeamRevised String? @map("project_team_revised")
+  projectTeamReponse String? @map("project_team_response")
+  finalReject        Boolean @default(false) @map("final_reject")
+  saleRepFeedBack    String? @map("sale_rep_feedback")
+  auditStatus        String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+
+  allowEditPrice Boolean @default(false) @map("allow_edit")
+  priceAfterEdit Int?    @map("price_after_edit")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  storeId   String  @map("store_id")
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  auditById String @map("audit_by_id")
+  auditBy   User   @relation(fields: [auditById], references: [id])
+  qcById    String @map("qc_by_id")
+  qcBy      User   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@index([monthYear], name: "idx_month_year")
+  @@map("osa")
+}
+
+model SOS {
+  id        String @id @default(cuid())
+  monthYear Int    @map("month_year")
+
+  typeOL              String? @map("type_ol") // only for Small format store
+  totalLength         Float   @map("total_length")
+  sosLength           Float   @map("sos_length")
+  msUnileveLength     Float   @map("ms_unilever_length")
+  olUnileveLength     Float   @map("ol_unilever_length") // small 
+  sosUnileveLength    Float   @map("sos_unilever_length") // small
+  privateLableLength  Float   @map("private_lable_length") //big - MS Chiều dài nhãn riêng DOB 
+  importedLableLength Float   @map("imported_lable_length") //big - MS Chiều dài hàng nhập khẩu
+
+  note    String?
+  comment String
+
+  projectTeamRevised String? @map("project_team_revised")
+  projectTeamReponse String? @map("project_team_response")
+  finalReject        Boolean @default(false) @map("final_reject")
+  saleRepFeedBack    String? @map("sale_rep_feedback")
+  auditStatus        String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  storeId   String  @map("store_id")
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  auditById String @map("audit_by_id")
+  auditBy   User   @relation(fields: [auditById], references: [id])
+  qcById    String @map("qc_by_id")
+  qcBy      User   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@index([monthYear], name: "idx_month_year")
+  @@map("sos")
+}
+
+model NPD {
+  id        String @id @default(cuid())
+  monthYear Int    @map("month_year")
+
+  stock        Int
+  currentStock Int     @map("current_stock")
+  priceList    Boolean @map("price_list")
+  location     String
+
+  note    String?
+  comment String
+
+  projectTeamRevised String? @map("project_team_revised")
+  projectTeamReponse String? @map("project_team_response")
+  finalReject        Boolean @default(false) @map("final_reject")
+  saleRepFeedBack    String? @map("sale_rep_feedback")
+  auditStatus        String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+
+  allowEditPrice Boolean @default(false) @map("allow_edit")
+  priceAfterEdit Int?    @map("price_after_edit")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  storeId   String  @map("store_id")
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  auditById String @map("audit_by_id")
+  auditBy   User   @relation(fields: [auditById], references: [id])
+  qcById    String @map("qc_by_id")
+  qcBy      User   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@index([monthYear], name: "idx_month_year")
+  @@map("npd")
+}
+
+model Rental {
+  id        String @id @default(cuid())
+  monthYear Int    @map("month_year")
+
+  stock        Int
+  currentStock Int     @map("current_stock")
+  priceList    Boolean @map("price_list")
+  location     String
+
+  note               String?
+  comment            String
+  projectTeamRevised String? @map("project_team_revised")
+  projectTeamReponse String? @map("project_team_response")
+  finalReject        Boolean @default(false) @map("final_reject")
+  saleRepFeedBack    String? @map("sale_rep_feedback")
+  auditStatus        String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+
+  allowEditPrice Boolean @default(false) @map("allow_edit")
+  priceAfterEdit Int?    @map("price_after_edit")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  storeId   String  @map("store_id")
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+
+  auditById String @map("audit_by_id")
+  auditBy   User   @relation(fields: [auditById], references: [id])
+  qcById    String @map("qc_by_id")
+  qcBy      User   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@index([monthYear], name: "idx_month_year")
+  @@map("rental")
 }

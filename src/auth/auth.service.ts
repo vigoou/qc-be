@@ -18,7 +18,7 @@ export class AuthService {
     userName: string,
     pass: string,
   ): Promise<{ access_token: string }> {
-    const query: Prisma.UserWhereUniqueInput = { user_name: userName };
+    const query: Prisma.UserWhereUniqueInput = { userName: userName };
     const user = await this.usersService.findByUserName(query);
     if (!user) {
       throw new AuthenticationException('User not found');

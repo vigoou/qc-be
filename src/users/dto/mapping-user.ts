@@ -6,13 +6,13 @@ export function transformUserCreateInput(
 ): Prisma.UserCreateInput {
   const currentTime = new Date();
   const createUser: Prisma.UserCreateInput = {
-    user_name: data.userName || '',
+    userName: data.userName || '',
     email: data.email || '',
-    phone_number: data.phoneNumber || '',
+    phoneNumber: data.phoneNumber || '',
     name: data.name,
     password: data.password || '',
-    created_at: currentTime,
-    updated_at: currentTime,
+    createdAt: currentTime,
+    updatedAt: currentTime,
     role: {
       connectOrCreate: {
         where: {
@@ -20,8 +20,8 @@ export function transformUserCreateInput(
         },
         create: {
           name: data.role || '',
-          created_at: currentTime,
-          updated_at: currentTime,
+          createdAt: currentTime,
+          updatedAt: currentTime,
         },
       },
     },

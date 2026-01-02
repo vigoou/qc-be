@@ -7,24 +7,28 @@ import { transformData } from '../common/transform-data';
 import { Roles } from '../auth/role/roles.decorator';
 import { Role } from '../enum/role.enum';
 import { transformUserCreateInput } from './dto/mapping-user';
+import { Public } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles([Role.ADMIN])
+  // @Roles([Role.ADMIN])
+  @Public()
   @Post()
-  create(@Body() req: CreateUserDto) {
+  async create(@Body() req: CreateUserDto) {
+    console.log('Create User:', req);
     const createUser = transformUserCreateInput(req);
-    const resUser = this.usersService.createUser(createUser);
+    const resUser = await this.usersService.createUser(createUser);
     return transformData(ResponseUserDto, resUser);
   }
 
   @Get()
-  getUserByUnit(@Query() query: any) {
+  async getUserByUnit(@Query() query: any) {
     const userQuery: Prisma.UserWhereUniqueInput = {
       ...query,
     };
-    return this.usersService.findOne(userQuery);
+    const user = await this.usersService.findOne(userQuery);
+    return transformData(ResponseUserDto, user);
   }
 }
