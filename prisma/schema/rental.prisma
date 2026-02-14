@@ -1,0 +1,50 @@
+model RentalChecklist {
+  yearMonth Int    @map("year_month")
+  storeCode String @map("store_code")
+  rentalId  String @map("rental_id")
+
+  @@id([yearMonth, storeCode, rentalId])
+  @@index([yearMonth, storeCode, rentalId], name: "idx_year_month_store_code_rental_id")
+  @@map("rental_checklist")
+}
+
+model Rental {
+  id        String @id @default(cuid())
+  yearMonth Int    @map("year_month")
+
+  stock        Int
+  currentStock Int     @map("current_stock")
+  priceList    Boolean @map("price_list")
+  location     String
+
+  note               String?
+  comment            String
+  projectTeamRevised String? @map("project_team_revised")
+  projectTeamReponse String? @map("project_team_response")
+  finalReject        Boolean @default(false) @map("final_reject")
+  saleRepFeedBack    String? @map("sale_rep_feedback")
+  auditStatus        String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+
+  allowEditPrice Boolean @default(false) @map("allow_edit")
+  priceAfterEdit Int?    @map("price_after_edit")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  storeCode   String  @map("store_code")
+  store       Store   @relation(fields: [storeCode], references: [essStoreCode])
+  productCode String  @map("product_code")
+  product     Product @relation(fields: [productCode], references: [productCode])
+
+  auditById String? @map("audit_by_id")
+  auditBy   User?   @relation("audit_by_id", fields: [auditById], references: [id])
+  qcById    String? @map("qc_by_id")
+  qcBy      User?   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@index([yearMonth], name: "idx_year_month_rental")
+  @@map("rental")
+}

@@ -1,0 +1,198 @@
+model Customer {
+  name      String
+  ka        String
+  channel   String
+  code      String   @id @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  stores    Store[]
+
+  @@map("customer")
+}
+
+model Store {
+  name         String
+  essStoreCode String      @id @unique @map("ess_store_code")
+  typeCode     String      @map("type_code")
+  type         String
+  formatType   String      @map("format_type")
+  status       Boolean
+  frequency    Int
+  auditTime    Int         @map("audit_time")
+  region       String
+  province     String
+  district     String
+  ward         String
+  address      String
+  latitude     String
+  longitude    String
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @default(now()) @map("updated_at")
+  supervisorId String?     @map("supervisor_id")
+  supervisor   User?       @relation(name: "supervisor_id", fields: [supervisorId], references: [id])
+  saleRepId    String?     @map("sale_rep_id")
+  saleRep      User?       @relation(name: "sale_rep_id", fields: [saleRepId], references: [id])
+  sipId        String?     @map("sip_id")
+  sip          User?       @relation(name: "sip_id", fields: [sipId], references: [id])
+  auditorsId   String?     @map("auditors_id")
+  auditors     User?       @relation(name: "auditors_id", fields: [auditorsId], references: [id])
+  customerCode String      @map("customer_code")
+  customer     Customer    @relation(fields: [customerCode], references: [code])
+  osas         OSA[]
+  sos          SOS[]
+  npds         NPD[]
+  rentals      Rental[]
+  promotions   Promotion[]
+
+  @@map("store")
+}
+
+model Category {
+  code String @id @unique
+
+  name   String
+  nameVN String? @map("name_vn")
+
+  status                  Boolean                 @default(true)
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @default(now()) @map("updated_at")
+  products                Product[]
+  subCategoryInCategories SubCategoryInCategory[]
+  sosrules                SOSRule[]
+  sos                     SOS[]
+
+  @@map("category")
+}
+
+model SubCategory {
+  code String @id @unique
+
+  name                    String
+  nameVN                  String?                 @map("name_vn")
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @default(now()) @map("updated_at")
+  subCategoryInCategories SubCategoryInCategory[]
+  products                Product[]
+  sosrules                SOSRule[]
+  sos                     SOS[]
+
+  @@map("sub_category")
+}
+
+model SubCategoryInCategory {
+  categoryCode    String      @map("category_code")
+  category        Category    @relation(fields: [categoryCode], references: [code])
+  subCategoryCode String      @map("sub_category_code")
+  subCategory     SubCategory @relation(fields: [subCategoryCode], references: [code])
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @default(now()) @map("updated_at")
+
+  @@id([categoryCode, subCategoryCode])
+  @@map("sub_category_in_category")
+}
+
+model Brand {
+  name      String
+  code      String    @id @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  products  Product[]
+  sosrules  SOSRule[]
+  sos       SOS[]
+
+  @@map("brand")
+}
+
+model Product {
+  productCode    String  @id @unique @map("product_code")
+  oldProductCode String? @map("old_product_code")
+  newProductCode String? @map("new_product_code")
+  name           String
+  nameVN         String? @map("name_vn")
+  packageSize    String? @map("package_size")
+  barcode        String? @map("barcode")
+  length         Int
+  unit           String?
+
+  status          Boolean      @default(true)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @default(now()) @map("updated_at")
+  brandCode       String       @map("brand_code")
+  brand           Brand        @relation(fields: [brandCode], references: [code])
+  categoryCode    String?      @map("category_code")
+  category        Category?    @relation(fields: [categoryCode], references: [code])
+  subCategoryCode String?      @map("sub_category_code")
+  subCategory     SubCategory? @relation(fields: [subCategoryCode], references: [code])
+  osas            OSA[]
+  npds            NPD[]
+  rentals         Rental[]
+  promotions      Promotion[]
+
+  @@map("product")
+}
+
+model SOSRule {
+  categoryCode    String @map("category_code")
+  subCategoryCode String @map("sub_category_code")
+  brandCode       String @map("brand_code")
+
+  ruleBig     String?     @map("rule_big")
+  ruleSmall   String?     @map("rule_small")
+  note        String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @default(now()) @map("updated_at")
+  category    Category    @relation(fields: [categoryCode], references: [code])
+  subCategory SubCategory @relation(fields: [subCategoryCode], references: [code])
+  brand       Brand       @relation(fields: [brandCode], references: [code])
+
+  @@id([categoryCode, subCategoryCode, brandCode])
+  @@map("sos_rule")
+}
+
+model OOLRule {
+  offCode   String   @unique @map("off_code")
+  offName   String   @map("off_name")
+  offNameVN String   @map("off_name_vn")
+  ruleBig   Boolean  @map("rule_big")
+  ruleSmall Boolean  @map("rule_small")
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("ool_rule")
+}
+
+// model TargetSOS {
+
+//   storeCode    String   @map("store_code")
+//   store        Store    @relation(fields: [storeCode], references: [essStoreCode])
+//   categoryCode String   @map("category_code")
+//   category     Category @relation(fields: [categoryCode], references: [code])
+//   createdAt    DateTime @default(now()) @map("created_at")
+//   updatedAt    DateTime @default(now()) @map("updated_at")
+//   target       Float
+
+//   @@id([storeCode, categoryCode])
+//   @@map("target_sos")
+// }
+
+model PromotionDetail {
+  promotionId String   @id @map("promotion_id")
+  description String
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("promotion_detail")
+}
+
+model Config {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("config")
+}

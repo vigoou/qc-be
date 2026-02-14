@@ -1,0 +1,9 @@
+model C2AChecklist {
+  yearMonth Int    @map("year_month")
+  storeCode String @map("store_code")
+  c2aId     String @map("c2a_id")
+
+  @@id([yearMonth, storeCode, c2aId])
+  @@index([yearMonth, storeCode, c2aId], name: "idx_year_month_store_code_c2a_id")
+  @@map("c2a_checklist")
+}

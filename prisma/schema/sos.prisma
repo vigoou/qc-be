@@ -1,0 +1,60 @@
+model SOSChecklist {
+  yearMonth Int    @map("year_month")
+  storeCode String @map("store_code")
+  category  String @map("category")
+
+  @@id([yearMonth, storeCode, category])
+  @@index([yearMonth, storeCode, category], name: "idx_year_month_store_code_category_sos")
+  @@map("sos_checklist")
+}
+
+model SOS {
+  yearMonth       Int    @map("year_month")
+  storeCode       String @map("store_code")
+  categoryCode    String @map("category_code")
+  subCategoryCode String @map("sub_category_code")
+  brandCode       String @map("brand_code")
+  auditDate       Int    @map("audit_date")
+
+  typeOL           String? @map("type_ol") // only for Small format store
+  totalLength      Float?  @default(0) @map("total_length")
+  sosLength        Float?  @default(0) @map("sos_length")
+  msUnileverLength Float?  @default(0) @map("ms_unilever_length")
+
+  olUnileverLength  Float? @default(0) @map("ol_unilever_length") // small 
+  sosUnileverLength Float? @default(0) @map("sos_unilever_length") // small
+
+  privateLabelLength  Float? @default(0) @map("private_label_length") //big - MS Chiều dài nhãn riêng DOB 
+  importedLabelLength Float? @default(0) @map("imported_label_length") //big - MS Chiều dài hàng nhập khẩu
+
+  note    String?
+  comment String?
+
+  projectTeamRevised  String? @map("project_team_revised")
+  projectTeamResponse String? @map("project_team_response")
+  finalReject         Boolean @default(false) @map("final_reject")
+  saleRepFeedBack     String? @map("sale_rep_feedback")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+  qcEvidence     String? @map("qc_evidence")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  brand       Brand       @relation(fields: [brandCode], references: [code])
+  category    Category    @relation(fields: [categoryCode], references: [code])
+  subCategory SubCategory @relation(fields: [subCategoryCode], references: [code])
+  store       Store       @relation(fields: [storeCode], references: [essStoreCode])
+
+  auditById String? @map("audit_by_id")
+  auditBy   User?   @relation("audit_by_id", fields: [auditById], references: [id])
+  qcById    String? @map("qc_by_id")
+  qcBy      User?   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@id([yearMonth, storeCode, categoryCode, subCategoryCode, brandCode, auditDate])
+  @@index([yearMonth, storeCode])
+  @@index([storeCode])
+  @@map("sos")
+}

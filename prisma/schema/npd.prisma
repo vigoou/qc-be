@@ -1,0 +1,54 @@
+model NPDChecklist {
+  yearMonth Int    @map("year_month")
+  storeId   String @map("store_id")
+  productId String @map("product_id")
+
+  @@id([yearMonth, storeId, productId])
+  @@map("npd_checklist")
+}
+
+model NPD {
+  yearMonth   Int    @map("year_month")
+  storeCode   String @map("store_code")
+  productCode String @map("product_code")
+  auditDate   Int    @map("audit_date")
+
+  stock        Int
+  currentStock Int     @map("current_stock")
+  priceList    Boolean @map("price_list")
+  location     String
+
+  note    String?
+  comment String?
+
+  projectTeamRevised  String? @map("project_team_revised")
+  projectTeamResponse String? @map("project_team_response")
+  finalReject         Boolean @default(false) @map("final_reject")
+  saleRepFeedBack     String? @map("sale_rep_feedback")
+  auditStatus         String  @map("audit_status")
+
+  qcNote         String? @map("qc_note")
+  qcIsReject     Boolean @default(false) @map("qc_is_reject")
+  qcReasonReject String? @map("qc_reason_reject")
+  qcEvidence     String? @map("qc_evidence")
+
+  allowEditPrice Boolean @default(false) @map("allow_edit")
+  priceAfterEdit Int?    @map("price_after_edit")
+
+  createdAt DateTime @default(now()) @map("created_at") // time audit
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  store   Store   @relation(fields: [storeCode], references: [essStoreCode])
+  product Product @relation(fields: [productCode], references: [productCode])
+
+  auditById String? @map("audit_by_id")
+  auditBy   User?   @relation("audit_by_id", fields: [auditById], references: [id])
+  qcById    String? @map("qc_by_id")
+  qcBy      User?   @relation("qc_by_id", fields: [qcById], references: [id])
+
+  @@id([yearMonth, storeCode, productCode, auditDate])
+  @@index([yearMonth, storeCode])
+  @@index([storeCode])
+  @@index([productCode])
+  @@map("npd")
+}

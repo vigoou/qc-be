@@ -1,0 +1,14 @@
+// model OLChecklist {
+
+//   @@map("ol_checklist")
+// }
+
+model OffLocation {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("off_location")
+}
